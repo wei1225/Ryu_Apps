@@ -73,18 +73,41 @@ class StatsController(ControllerBase):
         self.waiters = data['waiters']
 
     def get_homepage(self, req, **_kwargs):
-        #dps = self.dpset.dps.keys()
-        #body = json.dumps(dps)
-        return (Response(content_type='text/html', 
-            body='<a href="/stats/switches">get the list of all switches</a><br/>'))
-        #return Response(status=404)
 
+         return (Response(content_type='text/html', 
+            body='<a href="/stats/switches">get the list of all switches</a><br/>'))
 
     def get_dpids(self, req, **_kwargs):
-
         dps = self.dpset.dps.keys()
-        body = json.dumps(dps)
-        return (Response(content_type='application/json', body=body))
+        if (dps == None):
+            return (Response(content_type="text/html", body=None))
+            
+        body = ''
+        for dp in dps:
+
+            body = 'Switch '+str(dp)+'<br/>'
+            href = '/stats/desc/'+str(dp)
+            body += '<a href='+href+'>'+'get the desc stats of the switch '+str(dp)+'</a><br/>'
+            href = '/stats/flow/'+str(dp)
+            body += '<a href='+href+'>'+'get flows stats of the switch '+str(dp)+'</a><br/>'
+            href = '/stats/port/'+str(dp)
+            body += '<a href='+href+'>'+'get ports stats of the switch '+str(dp)+'</a><br/>'
+
+            form1 ='<form name="form1" action="/stats/flowentry/add" method="POST" target="_self">'
+            form1 +=' add a flow entry: <input type="text" name="text1" size="24"> <input type="submit" name="Submit" value="add"></form><br/>'
+        
+            form2 ='<form name="form2" action="/stats/flowentry/modify" method="POST" target="_self">'
+            form2 +=' modify all matching flow entries: <input type="text" name="text1" size="24"> <input type="submit" name="Submit" value="modify"></form><br/>'
+
+            form3 ='<form name="form3" action="/stats/flowentry/delete" method="POST" target="_self">'
+            form3 +=' delete all matching flow entries: <input type="text" name="text1" size="24"> <input type="submit" name="Submit" value="delete"></form><br/>'
+        
+            #form4 ='<form name="form4" action="/stats/flowentry/clear/'+str(dp)+' method="POST" target="_self">'
+            #form4 +=' delete all flow entries:<input type="submit" name="Submit" value="Delete All"> </form><br/>'
+
+            body+=form1+form2+form3
+       
+        return (Response(content_type='text/html',body=body))       
 
     def get_desc_stats(self, req, dpid, **_kwargs):
         dp = self.dpset.get(int(dpid))
@@ -147,7 +170,8 @@ class StatsController(ControllerBase):
         input_ = urllib.unquote(req.body)
         print input_
         
-        ftemp = input_.split('=')[1]
+        cmd = input_.split('&')[1].split('=')[1]
+        ftemp =  input_.split('&')[0].split('=')[1]
 
         try:
             flow = eval(ftemp)

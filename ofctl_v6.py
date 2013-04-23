@@ -64,22 +64,41 @@ def to_actions(dp, acts):
 def to_rule(rule,_rule):
     
     for k,v in rule.items():
-        '''
-        if k == 'dl_src':
-            _rule.set_dl_dst(v):
-        '''        
-        if k == 'dl_type':
+
+        if k == 'in_port':
+            _rule.set_in_port(v)
+        elif k == 'dl_vlan':
+            _rule.set_dl_vlan(v)
+        elif k == 'set_dl_vlan_pcp':
+            _rule.set_dl_vlan_pcp(v)
+        elif k == 'dl_src':
+            _rule.set_dl_src(convert.haddr_to_bin(v))
+        elif k == 'dl_dst':
+            _rule.set_dl_dst(convert.haddr_to_bin(v))
+        elif k == 'dl_type':
             _rule.set_dl_type(v)
         elif k == 'nw_src':
             _rule.set_nw_src(convert.ipv4_to_int(v))
+        elif k == 'nw_src_masked':
+            if _rule.flow.nw_src != 0:
+                _rule.set_nw_src_masked(_rule.flow.nw_src,convert.ipv4_prefix_to_bin(v))
         elif k == 'nw_dst':
             _rule.set_nw_dst(convert.ipv4_to_int(v))
+        elif k == 'nw_dst_masked':
+            if _rule.flow.nw_dst != 0:
+                _rule.set_nw_dst_masked(_rule.flow.nw_dst,convert.ipv4_prefix_to_bin(v))
         elif k == 'ipv6_label':
             _rule.set_ipv6_label(v)
         elif k == 'ipv6_src':
             _rule.set_ipv6_src(convert.ipv6_to_arg_list(v))
+        elif k == 'ipv6_src_masked':
+            if _rule.flow.ipv6_src != []:
+                _rule.set_ipv6_src_masked(_rule.flow.ipv6_src,convert.ipv6_prefix_to_arg_list(v))       
         elif k == 'ipv6_dst':
-            _rule.set_ipv6_dst(convert.ipv6_to_arg_list(v))
+            _rule.set_ipv6_dst(convert.ipv6_to_arg_list(v))            
+        elif k == 'ipv6_dst_masked':
+            if _rule.flow.ipv6_dst != []:
+                _rule.set_ipv6_dst_masked(_rule.flow.ipv6_dst,convert.ipv6_prefix_to_arg_list(v))
         else:
             pass
     return _rule    
@@ -96,11 +115,6 @@ def ipv6_add_to_str(binary):
 
 
 
-"""
-    h = hexlify(binary)
-    return h[0:4]+':'+h[4:8]+':'+h[8:12]+':'+h[12:16]+':'+h[16:20]+':'+h[20:24]+':'+h[24:28]+':'+h[28:32]
-
-"""
 
 def actions_to_str(acts):
     actions = []
@@ -270,17 +284,43 @@ def get_flow_stats(dp, waiters):
             } 
             for field in body.fields:
                 _dict = {}
+
                 if field.nxm_header == ofproto_v1_0.NXM_OF_IN_PORT:
                     _dict['in_port'] = hex(field.value)
                 elif field.nxm_header ==  ofproto_v1_0.NXM_OF_ETH_SRC:
                     _dict['dl_src'] = haddr_to_str(field.value)
                 elif field.nxm_header ==  ofproto_v1_0.NXM_OF_ETH_DST:
                     _dict['dl_dst'] = haddr_to_str(field.value)
+
+                elif field.nxm_header ==  ofproto_v1_0.NXM_OF_ETH_TYPE:
+                    _dict['dl_type'] = hex(field.value)
+                    
+
+                elif field.nxm_header == ofproto_v1_0.NXM_OF_IP_SRC:
+                    _dict['nw_src'] = convert.ipv4_to_str(field.value)
+                    
+                elif field.nxm_header == ofproto_v1_0.NXM_OF_IP_SRC_W:
+                    _dict['nw_src_masked'] = convert.bin_to_ipv4_prefix(field.value)
+
+                elif field.nxm_header == ofproto_v1_0.NXM_OF_IP_DST:
+                    _dict['nw_dst'] = convert.ipv4_to_str(field.value)
+                    
+                elif field.nxm_header == ofproto_v1_0.NXM_OF_IP_DST_W:
+                    _dict['nw_dst_masked'] = convert.bin_to_ipv4_prefix(field.value)
+
+
                 elif field.nxm_header == ofproto_v1_0.NXM_NX_IPV6_SRC:
-                    print '****',field.value
+                    #print '****',field.value
                     _dict['ipv6_src'] = ipv6_add_to_str(field.value)
+
+                elif field.nxm_header == ofproto_v1_0.NXM_NX_IPV6_SRC_W:
+                    _dict['ipv6_src_masked'] = convert.arg_list_to_ipv6_prefix(field.value)
+                    pass
                 elif field.nxm_header == ofproto_v1_0.NXM_NX_IPV6_DST:
-                    _dict['ipv6_dst'] = ipv6_add_to_str(field.value)
+                    _dict['ipv6_dst'] = ipv6_add_to_str(field.value) 
+
+                elif field.nxm_header == ofproto_v1_0.NXM_NX_IPV6_DST_W:
+                    _dict['ipv6_dst_masked'] = convert.arg_list_to_ipv6_prefix(field.value)         
                 else:
                     try:
                         _dict['value'] =  hex(field.value)
