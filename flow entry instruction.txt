@@ -1,0 +1,26 @@
+*****the priority of the flow entry***** 
+Packets are matched against flow entries based on prioritization. An entry that
+specifies an exact match (i.e., it has no wildcards) is always the highest priority.
+All wildcard entries have a priority associated with them. Higher priority entries
+must match before lower priority ones. If multiple entries have the same priority,
+the switch is free to choose any ordering. Higher numbers have higher priorities.
+
+example:
+
+*****add a flow entry*****:
+ipv4:#actions is a list of dicts
+{'dpid':1,'actions':[{'type':'OUTPUT','port':4}],'rule':{'in_port':1,'dl_type':0x0800,'dl_src':'5c:ac:4c:08:d8:af','nw_src':'10.0.0.1','nw_src_masked':24}}
+ipv6:
+{'dpid':1,'actions':[{'type':'OUTPUT','port':4}],'rule':{'in_port':1,'dl_type':0x86dd,'dl_src':'5c:ac:4c:08:d8:af','ipv6_src':'10::1','ipv6_src_masked':64}}
+
+*****modify a flow entry*****:
+you can only modify the 'actions' item in a flow entry,if you want to change anything else,it equal to add a new flow entry.No matter modify or delete flow entries,they are all matched according to the 'rule' item.when the 'actions' item doesn't exist or is a empty list,it means we do nothing to the packets matched the flow entry,so these packet are droped.
+
+change before:
+{'dpid':1,'actions':[{'type':'OUTPUT','port':4}],'rule':{'dl_type':0x0800,'nw_src':'10.0.0.1','nw_src_masked':24}}
+change after:--output port is changed from 4 to 100
+{'dpid':1,'actions':[{'type':'OUTPUT','port':100}],'rule':{'dl_type':0x0800,'nw_src':'10.0.0.1','nw_src_masked':24}}
+ 
+*****delete a flow entry*****
+liking modify,more detail the 'rule' item are,the less entries are deleted,if the 'rule' is null, all flow entries are moved.  
+{'dpid':1}-- the 'rule' is empty. 
