@@ -73,16 +73,40 @@ def ipv4_prefix_to_bin(prefix):
         mask = (mask << 1) | 1
     mask = mask << (32 - prefix)
     return mask
-
-def bin_to_prefix(bin):
+'''
+def bin_to_prefix(bin,n):
     i = 0
-    while (bin%2)!=0:
-        i += 1
-    return i
-
+    bin = (~bin)
+    print bin 
+    for j in xrange(0,n):
+        if bin != 0:
+            bin >> 1
+        else:
+            i = n - j
+            return i
+        print 'j is ',j
+    return i 
+'''
 def bin_to_ipv4_prefix(bin):
-    return bin_to_prefix(bin)
-    
+    n = 0
+    list_ = []
+    list_.append(( bin >> 24 ) & 0xff)
+    list_.append(( bin >> 16 ) & 0xff)
+    list_.append(( bin >> 8 ) & 0xff)
+    list_.append(bin & 0xff)
+    for i in xrange(0,4):
+        if list_[i] == 255:
+            n += 8
+        elif list_[i] > 0 and list_[i] <255:
+            list_[i] = 255 -list_[i]
+            j =0
+            while list_[i]!=0:
+                list_[i] >>= 1
+                j += 1
+            n += 8-j
+        else:
+            pass
+    return n
 
 
 # ipv6
@@ -163,7 +187,12 @@ def arg_list_to_ipv6_prefix(list_):
         if list_[j] == 0xffff:
             i += 16
         elif list_[j] > 0 and list_[j] < 0xffff:
-            i += bin_to_prefix(list_[j])
+            list_[j] = 0xffff - list_[j]
+            k = 0
+            while list_[j] != 0:
+                list_[j] >>= 1
+                k += 1
+            i += (16 - k)
         else:
             pass
     return i
@@ -197,4 +226,5 @@ if __name__ == '__main__':
     ipv6_network = ipv6_to_bin('2013:da18:215:8f2:aa20:66ff:ffff:ff3d')
     print ipv6_in_network(ipv6, ipv6_network, 65)
     '''
-    print ipv6_prefix_to_arg_list(16)
+    #print ipv6_prefix_to_arg_list(16)
+    print ipv4_to_str(167772160)
