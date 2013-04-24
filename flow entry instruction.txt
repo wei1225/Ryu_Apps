@@ -2,7 +2,7 @@
 
 the entry with the higher priority will be chosed
 {'dpid':1,'priority':1,'rule':{'in_port':1}}
-{'dpid':1,'priority':2,'rule':{'in_port':1},'actions':{'type':'OUTPUT','port':2}}
+{'dpid':1,'priority':2,'rule':{'in_port':1},'actions':[{'type':'OUTPUT','port':2}]}
 
 example:
 
