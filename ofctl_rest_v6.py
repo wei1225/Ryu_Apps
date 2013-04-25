@@ -79,6 +79,10 @@ class StatsController(ControllerBase):
 
     def get_dpids(self, req, **_kwargs):
         dps = self.dpset.dps.keys()
+
+        body = json.dumps(dps)
+        return (Response(content_type='application/json', body=body))
+        """
         if (dps == None):
             return (Response(content_type="text/html", body=None))
             
@@ -107,7 +111,10 @@ class StatsController(ControllerBase):
 
             body+=form1+form2+form3
        
-        return (Response(content_type='text/html',body=body))       
+        return (Response(content_type='text/html',body=body))    
+
+        """
+           
 
     def get_desc_stats(self, req, dpid, **_kwargs):
         dp = self.dpset.get(int(dpid))
@@ -155,24 +162,14 @@ class StatsController(ControllerBase):
 
     def mod_flow_entry(self, req, cmd, **_kwargs):
 
-        #delete {'dpid':1,'actions':[{'type':'output','port':2}} actions is a list of dict
-        #add {'dpid':1,'actions':[{'type':'OUTPUT','port':1}],'match':{'in_port':2}}
-        #modify is add a new entry not really modify
-        #
-        #print req.body
-        #{'dpid':1,'rule':{'dl_type':0x86dd,'ipv6_src':'10:0:0:0:0:0:0:1'},'actions':[{'type':OUTPUT,'port':2}]}
-        input = urllib.unquote(req.body)
-        #text1={'dpid':'1'}&Submit=Delete  delete
-        #text1={'dpid':'1'}
-        #Submit=Delete                      modify '\n' ?
-        
-
         input_ = urllib.unquote(req.body)
         print input_
-        
+        """
         cmd = input_.split('&')[1].split('=')[1]
         ftemp =  input_.split('&')[0].split('=')[1]
+        """
 
+        ftemp = input_.split('=')[1]
         try:
             flow = eval(ftemp)
             #print flow                      
